@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kenangan XII.3 — SMAN 1 Muaragembong</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        utama: '#0f172a',
+                        biru: '#1e40af',
+                        'biru-muda': '#3b82f6',
+                        'biru-sangat-muda': '#bfdbfe',
+                        instagram: '#E4405F',
+                        tiktok: '#000000',
+                    },
+                    fontFamily: {
+                        sans: ['Segoe UI', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * { scroll-behavior: smooth; }
+        body { background-color: #f8fafc; font-family: 'Segoe UI', sans-serif; }
+        .glass {
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .muncul {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+        .muncul.aktif {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .garis-timeline {
+            position: relative;
+        }
+        .garis-timeline::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, #1e40af, #3b82f6);
+        }
+        @media (min-width: 768px) {
+            .garis-timeline::before { left: 50%; transform: translateX(-50%); }
+        }
+        .foto-hover { transition: all 0.4s ease; }
+        .foto-hover:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 12px 30px rgba(30, 64, 175, 0.18); }
+        .kartu-sosial { transition: all 0.4s ease; }
+        .kartu-sosial:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(30, 64, 175, 0.18); }
+        
+        /* === LIGHTBOX GALERI === */
+        .lightbox-galeri {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 99999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .lightbox-galeri.tampil { display: flex; }
+        .lightbox-inner {
+            position: relative;
+            max-width: 90%;
+            max-height: 85vh;
+        }
+        .lightbox-img {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 8px;
+            object-fit: contain;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        .lightbox-galeri.tampil .lightbox-img { transform: scale(1); }
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .lightbox-nav:hover { background: rgba(255,255,255,0.3); }
+        .lightbox-prev { left: -70px; }
+        .lightbox-next { right: -70px; }
+        .lightbox-tutup {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            background: transparent;
+            color: white;
+            border: none;
+            font-size: 32px;
+            cursor: pointer;
+        }
+        .lightbox-caption {
+            text-align: center;
+            color: white;
+            margin-top: 15px;
+            font-size: 16px;
+            font-style: italic;
+        }
+        
+        /* === FILTER KATEGORI === */
+        .btn-filter {
+            transition: all 0.3s ease;
+        }
+        .btn-filter.aktif {
+            background-color: #1e40af;
+            color: white;
+        }
+        .item-foto {
+            transition: all 0.5s ease;
+        }
+        .item-foto.sembunyi {
+            opacity: 0;
+            transform: scale(0.9);
+            position: absolute;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="text-utama">
+
+<!-- === LIGHTBOX GALERI === -->
+<div id="lightboxGaleri" class="lightbox-galeri" onclick="if(event.target===this) tutupLightboxGaleri()">
+    <div class="lightbox-inner">
+        <button class="lightbox-tutup" onclick="tutupLightboxGaleri()">&times;</button>
+        <button class="lightbox-nav lightbox-prev" onclick="fotoSebelumnya()"><i class="fa fa-chevron-left"></i></button>
+        <img id="gambarGaleri" class="lightbox-img" src="" alt="">
+        <button class="lightbox-nav lightbox-next" onclick="fotoBerikutnya()"><i class="fa fa-chevron-right"></i></button>
+        <p id="captionGaleri" class="lightbox-caption"></p>
+    </div>
+</div>
+
+<!-- === HERO / PEMBUKA === -->
+<section class="relative min-h-screen flex items-center justify-center text-center text-white overflow-hidden">
+    <!-- GANTI FOTO BACKGROUND DI SINI -->
+    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://picsum.photos/id/1018/1920/1080');"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-utama/70 via-utama/50 to-utama/90"></div>
+    
+    <div class="relative z-10 px-4">
+        <h1 class="text-5xl md:text-7xl font-bold mb-4 tracking-wide">Kenangan XII.3</h1>
+        <h2 class="text-2xl md:text-4xl font-light mb-6 text-biru-sangat-muda">SMAN 1 Muaragembong</h2>
+        <p class="text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed px-2">
+            Bukan hanya tentang sekolah, tetapi tentang cerita yang pernah kita jalani bersama.
+        </p>
+        <a href="#mulai" class="inline-block px-8 py-3 bg-biru hover:bg-biru-muda rounded-full font-semibold transition-all duration-300 shadow-lg">
+            Lihat Kenangan <i class="fa fa-chevron-down ml-2 animate-bounce"></i>
+        </a>
+    </div>
+</section>
+
+<div id="mulai" class="container mx-auto px-4 py-16 max-w-6xl">
+
+<!-- === TENTANG XII.3 === -->
+<section class="mb-16 muncul">
+    <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold text-biru mb-4">Tentang XII.3</h2>
+        <div class="w-24 h-1 bg-biru-muda mx-auto rounded-full"></div>
+    </div>
+    <p class="text-lg text-center max-w-3xl mx-auto mb-12 leading-relaxed text-gray-700">
+        XII.3 adalah salah satu bagian kecil dari perjalanan kami di SMAN 1 Muaragembong. Di dalamnya ada tawa, canda, tugas, ujian, kebersamaan, perbedaan, dan berbagai cerita yang mungkin tidak akan terulang kembali.
+    </p>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="glass rounded-2xl p-6 text-center foto-hover shadow">
+            <p class="text-3xl font-bold text-biru mb-2">2022 — 2023</p>
+            <p class="text-gray-600">Tahun Kebersamaan</p>
+        </div>
+        <div class="glass rounded-2xl p-6 text-center foto-hover shadow">
+            <p class="text-3xl font-bold text-biru mb-2">36</p>
+            <p class="text-gray-600">Jumlah Teman</p>
+        </div>
+        <div class="glass rounded-2xl p-6 text-center foto-hover shadow">
+            <p class="text-3xl font-bold text-biru mb-2">100+</p>
+            <p class="text-gray-600">Momen Bersama</p>
+        </div>
+        <div class="glass rounded-2xl p-6 text-center foto-hover shadow">
+            <p class="text-3xl font-bold text-biru mb-2">Tak Terhitung</p>
+            <p class="text-gray-600">Kenangan Tersimpan</p>
+        </div>
+    </div>
+</section>
+
+<!-- === GALERI FOTO UTAMA === -->
+<section class="mb-16 muncul">
+    <div class="relative rounded-2xl overflow-hidden shadow-xl cursor-pointer foto-hover" onclick="bukaGaleri(0)">
+        <!-- GANTI FOTO UTAMA KELAS DI SINI -->
+        <img src="https://picsum.photos/id/1082/1400/500" alt="Foto Bersama Seluruh Kelas XII.3" class="w-full h-[40vh] object-cover">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent flex flex-col justify-end p-8 md:p-12 text-white">
+            <h2 class="text-3xl md:text-5xl font-bold mb-3">Satu Kelas. Banyak Cerita. Tak Terlupakan.</h2>
+            <p class="text-lg md:text-xl text-biru-sangat-muda">Kenangan XII.3 — SMAN 1 Muaragembong</p>
+        </div>
+    </div>
+</section>
+
+<!-- === GALERI KENANGAN XII.3 === -->
+<section class="mb-24 muncul">
+    <div class="text-center mb-10">
+        <h2 class="text-3xl md:text-4xl font-bold text-biru mb-4">📸 Galeri Kenangan XII.3</h2>
+        <div class="w-24 h-1 bg-biru-muda mx-auto rounded-full mb-6"></div>
+    </div>
+
+    <!-- FILTER KATEGORI -->
+    <div class="flex flex-wrap justify-center gap-2 mb-10">
+        <button class="btn-filter aktif px-4 py-2 rounded-full border border-biru text-biru hover:bg-biru hover:text-white" data-filter="semua">Semua</button>
+        <button class="btn-filter px-4 py-2 rounded-full border border-biru text-biru hover:bg-biru hover:text-white" data-filter="kelas">Kelas</button>
+        <button class="btn-filter px-4 py-2 rounded-full border border-biru text-biru hover:bg-biru hover:text-white" data-filter="guru">Guru</button>
+        <button class="btn-filter px-4 py-2 rounded-full border border-biru text-biru hover:bg-biru hover:text-white" data-filter="kegiatan">Kegiatan</button>
+        <button class="btn-filter px-4 py-2 rounded-full border border-biru text-biru hover:bg-biru hover:text-white" data-filter="perpisahan">Perpisahan</button>
+        <button class="btn-filter px-4 py-2 rounded-full border border-biru text-biru hover:bg-biru hover:text-white" data-filter="candid">Candid</button>
+    </div>
+
+    <!-- GRID FOTO -->
+    <div id="wadahGaleri" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 relative">
+        
+        <!-- FOTO 1 - Kelas -->
+        <div class="item-foto foto-hover rounded-xl overflow-hidden shadow-lg cursor-pointer group" data-kategori="kelas" data-index="0" onclick="bukaGaleri(0)">
+            <!-- GANTI FOTO DI SINI -->
+            <img loading="lazy" src="https://picsum.photos/id/1005/600/400" alt="Foto Bersama Seluruh Kelas" class="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="p-3 bg-white">
+                <p class="font-medium text-biru text-sm">Awal dari sebuah cerita</p>
+            </div>
+        </div>
+
+        <!-- FOTO 2 - Kelas -->
+        <div class="item-foto foto-hover rounded-xl overflow-hidden shadow-lg cursor-pointer group" data-kategori="kelas" data-index="1" onclick="bukaGaleri(1)">
+            <!-- GANTI FOTO DI SINI -->
+            <img loading="lazy" src="https://picsum.photos/id/1015/600/400" alt="Kebersamaan XII.3" class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="p-3 bg-white">
+                <p class="font-medium text-biru text-sm">Kebersamaan XII.3</p>
+            </div>
+        </div>
+
+        <!-- FOTO 3 - Guru -->
+        <div class="item-foto foto-hover rounded-xl overflow-hidden shadow-lg cursor-pointer group" data-kategori="guru" data-index="2" onclick="bukaGaleri(2)">
+            <!-- GANTI FOTO DI SINI -->
+            <img loading="lazy" src="https://picsum.photos/id/429/600/400" alt="Bersama Wali Kelas" class="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="p-3 bg-white">
+                <p class="font-medium text-biru text-sm">Momen bersama wali kelas</p>
+            </div>
+        </div>
+
+        <!-- FOTO 4 - Guru -->
+        <div class="item-foto foto-hover rounded-xl overflow-hidden shadow-lg cursor-pointer group" data-kategori="guru" data-index="3" onclick="bukaGaleri(3)">
+            <!-- GANTI FOTO DI SINI -->
+            <img loading="lazy" src="https://picsum.photos/id/447/600/400" alt="Bersama Bapak Ibu Guru" class="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="p-3 bg-white">
+                <p class="font-medium text-biru text-sm">Terima kasih Bapak & Ibu Guru</p>
+            </div>
+        </div>
+
+        <!-- FOTO 5 - Kegiatan -->
+        <div class="item-foto foto-hover rounded-xl overflow-hidden shadow-lg cursor-pointer group" data-kategori="kegiatan" data-index="4" onclick="bukaGaleri(4)">
+            <!-- GANTI FOTO DI SINI -->
+            <img loading="lazy" src="https://picsum.photos/id/416/600/400" alt="Kegiatan Sekolah" class="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="p-3 bg-white">
+                <p class="font-medium text-biru text-sm">Hari-hari di sekolah</p>
+            </div>
+        </div>
+
+        <!-- FOTO 6 - Kegiatan -->
+        <div class="item-foto foto-hover rounded-xl overflow-hidden shadow-lg cursor-pointer group" data-kategori="kegiatan" data-index="5" onclick="bukaGaleri(5)">
+            <!-- GANTI FOTO DI SINI -->
+            <img loading="lazy" src="https://picsum.photos/id/325/600/400" alt="Kegiatan di Dalam Kelas" class="w-full h-60 object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="p-3 bg-white">
+                <p class="font-medium text-biru text-sm">Kegiatan bersama di kelas</p>
+            </div>
+        </div>
+
+        <!-- FOTO 7 - Perpisahan -->
+        <div class="item-foto foto-hover rounded-xl overflow-hidden shadow-lg cursor-pointer group" data-kategori="perpisahan" data-index="6" onclick="bukaGaleri(6)">
+            <!-- GANTI FOTO DI SINI -->
+            <img loading="lazy" src="https://picsum.photos/id/611/600/400" alt="Hari Perpisahan" class="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="p-3 bg-white">
+                <p class="font-medium text-biru text-sm">Sebelum kita berpisah</p>
+            </div>
+        </div>
+
+        <!-- FOTO 8 - Perpisahan -->
+        <div class="item-foto foto-hover rounded-xl overflow-hidden shadow-lg cursor-pointer group" data-kategori="perpisahan" data-index="7" onclick="bukaGaleri(7)">
+            <!-- GANTI FOTO DI SINI -->
+            <img loading="lazy" src="https://picsum.photos/id/1083/600/400" alt="Kenangan Terakhir" class="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="p-3 bg-white">
+                <p class="font-medium text-biru text-sm">Satu foto, seribu cerita</p>
+            </div>
+        </div>
+
+        <!-- FOTO 9 - Candid -->
+        <div class="item-foto foto-hover rounded-xl overflow-hidden shadow-lg cursor-pointer group" data-kategori="candid" data-index="8" onclick="bukaGaleri(8)">
+            <!-- GANTI FOTO DI SINI -->
+            <img loading="lazy" src="https://picsum.photos/id/496/600/400" alt="Senyum Teman-teman" class="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="p-3 bg-white">
+                <p class="font-medium text-biru text-sm">Senyum yang akan dirindukan</p>
+            </div>
+        </div>
+
+        <!-- FOTO 10 - Candid -->
+        <div class="item-foto foto-hover rounded-xl overflow-hidden shadow-lg cursor-pointer group" data-kategori="candid" data-index="9" onclick="bukaGaleri(9)">
+            <!-- GANTI FOTO DI SINI -->
+            <img loading="lazy" src="https://picsum.photos/id/452/600/400" alt="Momen Lucu & Kebersamaan" class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="p-3 bg-white">
+                <p class="font-medium text-biru text-sm">Cerita yang tidak terlupakan</p>
+            </div>
+        </div>
+
+        <!-- FOTO 11 - Kegiatan Sekolah -->
+        <div class="item-foto foto-hover rounded-xl overflow-hidden shadow-lg cursor-pointer group" data-kategori="kegiatan" data-index="10" onclick="bukaGaleri(10)">
+            <!-- GANTI FOTO DI SINI -->
+            <img loading="lazy" src="https://picsum.photos/id/20/600/400" alt="Lingkungan Sekolah" class="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="p-3 bg-white">
+                <p class="font-medium text-biru text-sm">Kenangan di lingkungan SMAN 1 Muaragembong</p>
+            </div>
+        </div>
+
+        <!-- FOTO 12 - Candid -->
+        <div class="item-foto foto-hover rounded-xl overflow-hidden shadow-lg cursor-pointer group" data-kategori="candid" data-index="11" onclick="bukaGaleri(11)">
+            <!-- GANTI FOTO DI SINI -->
+            <img loading="lazy" src="https://picsum.photos/id/177/600/400" alt="Tawa Bersama Teman" class="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="p-3 bg-white">
+                <p class="font-medium text-biru text-sm">Tawa yang tak akan terulang</p>
+            </div>
+        </div>
+
+        <!-- FOTO 13 - Kelas -->
+        <div class="item-foto foto-hover rounded-xl overflow-hidden shadow-lg cursor-pointer group" data-kategori="kelas" data-index="12" onclick="bukaGaleri(12)">
+            <!-- GANTI FOTO DI SINI -->
+            <img loading="lazy" src="https://picsum.photos/id/225/600/400" alt="Suasana Kelas" class="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="p-3 bg-white">
+                <p class="font-medium text-biru text-sm">Suasana yang akan dirindukan</p>
+            </div>
+        </div>
+
+        <!-- FOTO 14 - Perpisahan -->
+        <div class="item-foto foto-hover rounded-xl overflow-hidden shadow-lg cursor-pointer group" data-kategori="perpisahan" data-index="13" onclick="bukaGaleri(13)">
+            <!-- GANTI FOTO DI SINI -->
+            <img loading="lazy" src="https://picsum.photos/id/342/600/400" alt="Kenangan Terakhir Bersama" class="w-full h-60 object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="p-3 bg-white">
+                <p class="font-medium text-biru text-sm">Sampai jumpa lagi teman-teman</p>
+            </div>
+        </div>
+
+        <!-- FOTO 15 - Guru -->
+        <div class="item-foto foto-hover rounded-xl overflow-hidden shadow-lg cursor-pointer group" data-kategori="guru" data-index="14" onclick="bukaGaleri(14)">
+            <!-- GANTI FOTO DI SINI -->
+            <img loading="lazy" src="https://picsum.photos/id/16/600/400" alt="Bersama Seluruh Guru" class="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="p-3 bg-white">
+                <p class="font-medium text-biru text-sm">Ilmu yang kau berikan abadi selamanya</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- === TENTANG SMAN 1 MUARAGEMBONG === -->
+<section class="mb-24 muncul">
+    <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold text-biru mb-4">SMAN 1 Muaragembong</h2>
+        <div class="w-24 h-1 bg-biru-muda mx-auto rounded-full"></div>
+    </div>
+    <div class="glass rounded-2xl p-6 md:p-10 shadow">
+        <div class="grid md:grid-cols-2 gap-8">
+            <div>
+                <!-- GANTI FOTO SEKOLAH DI SINI -->
+                <img src="https://picsum.photos/id/20/600/400" alt="SMAN 1 Muaragembong" class="rounded-xl w-full object-cover foto-hover cursor-pointer" onclick="bukaGaleri(10)">
+            </div>
+            <div class="space-y-4 text-gray-700">
+                <h3 class="font-semibold text-xl text-biru">Tempat Kita Bertumbuh</h3>
+                <p>Sekolah ini adalah tempat di mana langkah kami dimulai. Dari gerbang pagi yang selalu ramai, lorong kelas yang penuh suara, hingga lapangan yang menjadi saksi keringat dan tawa kami.</p>
+                <p>Di sini kami bertemu guru yang sabar membimbing, berteman dengan orang-orang hebat, dan belajar bahwa sekolah bukan hanya tentang nilai di atas kertas, melainkan tentang karakter dan kebersamaan.</p>
+                <p><em class="text-sm text-gray-500">*Silakan ubah teks ini sesuai cerita dan kenangan kalian tentang sekolah.</em></p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- === TIMELINE PERJALANAN === -->
+<section class="mb-24 muncul">
+    <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold text-biru mb-4">Perjalanan XII.3</h2>
+        <div class="w-24 h-1 bg-biru-muda mx-auto rounded-full"></div>
+    </div>
+    <div class="garis-timeline pl-10 md:pl-0">
+        <div class="relative mb-10 md:flex md:items-center">
+            <div class="absolute left-[12px] md:left-1/2 w-4 h-4 bg-biru rounded-full -translate-x-1/2 shadow-lg z-10"></div>
+            <div class="md:w-1/2 md:pr-10 md:text-right">
+                <div class="glass rounded-xl p-5 shadow">
+                    <h4 class="font-bold text-biru">Awal Perkenalan</h4>
+                    <p class="text-gray-700 text-sm">Saat pertama kali masuk kelas, bertemu wajah-wajah baru yang nantinya menjadi bagian penting hidup kita.</p>
+                </div>
+            </div>
+        </div>
+        <div class="relative mb-10 md:flex md:items-center">
+            <div class="absolute left-[12px] md:left-1/2 w-4 h-4 bg-biru rounded-full -translate-x-1/2 shadow-lg z-10"></div>
+            <div class="md:w-1/2 md:ml-auto md:pl-10">
+                <div class="glass rounded-xl p-5 shadow">
+                    <h4 class="font-bold text-biru">Hari-hari Belajar</h4>
+                    <p class="text-gray-700 text-sm">Tugas menumpuk, jam pelajaran yang terasa lama, tapi selalu ada cara untuk tertawa bersama.</p>
+                </div>
+            </div>
+        </div>
+        <div class="relative mb-10 md:flex md:items-center">
+            <div class="absolute left-[12px] md:left-1/2 w-4 h-4 bg-biru rounded-full -translate-x-1/2 shadow-lg z-10"></div>
+            <div class="md:w-1/2 md:pr-10 md:text-right">
+                <div class="glass rounded-xl p-5 shadow">
+                    <h4 class="font-bold text-biru">Kegiatan Bersama</h4>
+                    <p class="text-gray-700 text-sm">Ikut serta dalam lomba, acara sekolah, dan hal-hal seru yang kita lalui beriringan.</p>
+                </div>
+            </div>
+        </div>
+        <div class="relative mb-10 md:flex md:items-center">
+            <div class="absolute left-[12px] md:left-1/2 w-4 h-4 bg-biru rounded-full -translate-x-1/2 shadow-lg z-10"></div>
+            <div class="md:w-1/2 md:ml-auto md:pl-10">
+                <div class="glass rounded-xl p-5 shadow">
+                    <h4 class="font-bold text-biru">Momen Lucu</h4>
+                    <p class="text-gray-700 text-sm">Hal konyol, tertawa sampai sakit perut, dan kenangan kecil yang tak akan pernah lupa.</p>
+                </div>
+            </div>
+        </div>
+        <div class="relative mb-10 md:flex md:items-center">
+            <div class="absolute left-[12px] md:left-1/2 w-4 h-4 bg-biru rounded-full -translate-x-1/2 shadow-lg z-10"></div>
+            <div class="md:w-1/2 md:pr-10 md:text-right">
+                <div class="glass rounded-xl p-5 shadow">
+                    <h4 class="font-bold text-biru">Menghadapi Ujian</h4>
+                    <p class="text-gray-700 text-sm">Gugup, belajar bersama, saling menyemangati demi hasil terbaik.</p>
+                </div>
+            </div>
+        </div>
+        <div class="relative mb-10 md:flex md:items-center">
+            <div class="absolute left-[12px] md:left-1/2 w-4 h-4 bg-biru rounded-full -translate-x-1/2 shadow-lg z-10"></div>
+            <div class="md:w-1/2 md:ml-auto md:pl-10">
+                <div class="glass rounded-xl p-5 shadow">
+                    <h4 class="font-bold text-biru">Hari Perpisahan</h4>
+                    <p class="text-gray-700 text-sm">Sedih rasanya melepas kebiasaan bertemu setiap hari, tapi harus melangkah maju.</p>
+                </div>
+            </div>
+        </div>
+        <div class="relative md:flex md:items-center">
+            <div class="absolute left-[12px] md:left-1/2 w-4 h-4 bg-biru rounded-full -translate-x-1/2 shadow-lg z-10"></div>
+            <div class="md:w-1/2 md:pr-10 md:text-right">
+                <div class="glass rounded-xl p-5 shadow">
+                    <h4 class="font-bold text-biru">Akhir & Awal Baru</h4>
+                    <p class="text-gray-700 text-sm">Bab sekolah selesai, namun persahabatan dan kenangan ini baru saja dimulai.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- === CERITA & PESAN === -->
+<section class="mb-24 muncul">
+    <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold text-biru mb-4">Cerita di Balik Kelas</h2>
+        <div class="w-24 h-1 bg-biru-muda mx-auto rounded-full"></div>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div class="glass rounded-xl p-6 foto-hover shadow">
+            <i class="fa fa-heart text-biru-muda text-2xl mb-3"></i>
+            <h4 class="font-bold mb-2">Hal yang Tak Akan Terlupakan</h4>
+            <p class="text-gray-700 text-sm">Suasana kelas yang selalu hidup, entah karena ribut tertawa atau sibuk mengejar waktu istirahat.</p>
+        </div>
+        <div class="glass rounded-xl p-6 foto-hover shadow">
+            <i class="fa fa-smile-o text-biru-muda text-2xl mb-3"></i>
+            <h4 class="font-bold mb-2">Tawa yang Pernah Kita Bagi</h4>
+            <p class="text-gray-700 text-sm">Satu hal konyol membuat satu kelas tertawa bersamaan, membuat beban pelajaran terasa lebih ringan.</p>
+        </div>
+        <div class="glass rounded-xl p-6 foto-hover shadow">
+            <i class="fa fa-clock-o text-biru-muda text-2xl mb-3"></i>
+            <h4 class="font-bold mb-2">Hari yang Akan Dirindukan</h4>
+            <p class="text-gray-700 text-sm">Bangun pagi berangkat sekolah, duduk di bangku yang sama, dan bertemu wajah yang sama setiap hari.</p>
+        </div>
+        <div class="glass rounded-xl p-6 foto-hover shadow">
+            <i class="fa fa-users text-biru-muda text-2xl mb-3"></i>
+            <h4 class="font-bold mb-2">Teman yang Menjadi Keluarga</h4>
+            <p class="text-gray-700 text-sm">Tak sekadar teman sekelas, kita saling menguatkan, mendukung, dan hadir satu sama lain.</p>
+        </div>
+        <div class="glass rounded-xl p-6 foto-hover shadow sm:col-span-2 lg:col-span-1">
+            <i class="fa fa-road text-biru-muda text-2xl mb-3"></i>
+            <h4 class="font-bold mb-2">Sebelum Akhirnya Berjalan Berbeda</h4>
+            <p class="text-gray-700 text-sm">Langkah kaki mungkin akan membelah ke arah yang berbeda, tapi jejak yang kita buat di sini tak akan hilang.</p>
+        </div>
+    </div>
+</section>
+
+<!-- === PESAN UNTUK TEMAN === -->
+<section class="mb-24 muncul">
+    <div class="glass rounded-2xl p-6 md:p-10 text-center shadow">
+        <h2 class="text-2xl md:text-3xl font-bold text-biru mb-6">Untukmu Teman-teman XII.3</h2>
+        <p class="text-lg leading-relaxed text-gray-700 max-w-3xl mx-auto">
+            Suatu hari nanti mungkin kita tidak lagi duduk di ruangan yang sama, tidak lagi bercanda di sela pelajaran, dan tidak lagi bertemu setiap hari. Namun semoga XII.3 tetap menjadi salah satu cerita terbaik yang pernah kita miliki. Di mana pun kita berada, semoga kenangan ini menjadi pelita yang mengingatkan bahwa kita pernah saling menemani di masa yang indah ini.
+        </p>
+    </div>
+</section>
+
+<!-- === FOTO BERSAMA UTAMA === -->
+<section class="mb-24 muncul">
+    <div class="text-center mb-6">
+        <h2 class="text-2xl md:text-3xl font-bold text-biru">Kita Semua</h2>
+    </div>
+    <div class="rounded-2xl overflow-hidden shadow-xl cursor-pointer foto-hover" onclick="bukaGaleri(0)">
+        <!-- GANTI FOTO BERSAMA UTAMA DI SINI -->
+        <img src="https://picsum.photos/id/1082/1400/600" alt="Foto Bersama Seluruh Kelas" class="w-full object-cover">
+    </div>
+    <p class="text-center mt-4 text-gray-600 italic">
+        Sekumpulan orang yang pernah berada di satu ruang, pada waktu yang sama, dan menjadi bagian dari cerita yang sama.
+    </p>
+</section>
+
+<!-- === KATA MUTIARA === -->
+<section class="mb-24 muncul">
+    <div class="grid md:grid-cols-3 gap-6 text-center">
+        <div class="glass rounded-xl p-6 shadow">
+            <p class="text-xl italic text-biru font-medium">"Waktu berlalu, foto tetap bercerita."</p>
+        </div>
+        <div class="glass rounded-xl p-6 shadow">
+            <p class="text-xl italic text-biru font-medium">"Yang selesai adalah sekolahnya, bukan kenangannya."</p>
+        </div>
+        <div class="glass rounded-xl p-6 shadow">
+            <p class="text-xl italic text-biru font-medium">"Kita mungkin berpisah jalan, tetapi pernah berjalan bersama."</p>
+        </div>
+    </div>
+</section>
+
+<!-- === MEDIA SOSIAL XII.3 === -->
+<section class="mb-24 muncul">
+    <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold text-biru mb-4">Ikuti Cerita Kami</h2>
+        <p class="text-gray-600 max-w-2xl mx-auto">Kenangan tidak hanya tersimpan dalam foto, tetapi juga dalam setiap cerita yang kita bagikan.</p>
+        <div class="w-24 h-1 bg-biru-muda mx-auto rounded-full mt-4"></div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+        <div class="glass rounded-2xl p-6 kartu-sosial shadow text-center">
+            <i class="fa fa-instagram text-5xl text-instagram mb-4"></i>
+            <h3 class="text-xl font-bold text-biru mb-1">Instagram</h3>
+            <p class="text-lg font-medium text-gray-800 mb-1">@chapter_xii3</p>
+            <p class="text-sm text-gray-500 mb-5">Dokumentasi dan cerita XII.3</p>
+            <a href="https://www.instagram.com/chapter_xii3/" target="_blank" rel="noopener noreferrer" 
+               class="inline-block px-6 py-2.5 bg-instagram text-white rounded-full font-medium hover:opacity-90 transition-all">
+                <i class="fa fa-external-link mr-2"></i> Kunjungi Instagram
+            </a>
+        </div>
+        <div class="glass rounded-2xl p-6 kartu-sosial shadow text-center">
+            <i class="fa fa-music text-5xl text-tiktok mb-4"></i>
+            <h3 class="text-xl font-bold text-biru mb-1">TikTok</h3>
+            <p class="text-lg font-medium text-gray-800 mb-1">@elthreeven.class_03</p>
+            <p class="text-sm text-gray-500 mb-5">Momen dan keseruan XII.3</p>
+            <a href="https://www.tiktok.com/@elthreeven_class_03" target="_blank" rel="noopener noreferrer" 
+               class="inline-block px-6 py-2.5 bg-tiktok text-white rounded-full font-medium hover:opacity-80 transition-all">
+                <i class="fa fa-external-link mr-2"></i> Kunjungi TikTok
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- === PENUTUP === -->
+<section class="mb-12 muncul text-center">
+    <h2 class="text-3xl md:text-5xl font-bold text-biru mb-6">Terima Kasih XII.3</h2>
+    <p class="text-xl text-gray-700 mb-3">Terima kasih SMAN 1 Muaragembong</p>
+    <p class="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+        Untuk semua tawa, cerita, perjuangan, dan kenangan yang pernah kita buat bersama. Semoga kita semua bertemu lagi dalam kesuksesan masing-masing.
+    </p>
+
+    <div class="mt-12">
+        <a href="#" onclick="window.scrollTo({top:0, behavior:'smooth'}); return false;" class="inline-block px-6 py-2 bg-biru text-white rounded-full hover:bg-biru-muda transition-all">
+            <i class="fa fa-chevron-up mr-2"></i> Kembali ke Atas
+        </a>
+    </div>
+</section>
+
+</div>
+
+<!-- === FOOTER === -->
+<footer class="bg-utama text-white py-6 text-center">
+    <p class="text-sm">Kenangan XII.3 — SMAN 1 Muaragembong</p>
+    <p class="text-xs mt-1 text-gray-400">Dibuat dengan rasa rindu & kasih sayang ✨</p>
+</footer>
+
+<script>
+// === DATA GALERI ===
+const dataGaleri = [
+    { src: 'https://picsum.photos/id/1005/1200/800', cap: 'Awal dari sebuah cerita', kat: 'kelas' },
+    { src: 'https://picsum.photos/id/1015/1200/800', cap: 'Kebersamaan XII.3', kat: 'kelas' },
+    { src: 'https://picsum.photos/id/429/1200/800', cap: 'Momen bersama wali kelas', kat: 'guru' },
+    { src: 'https://picsum.photos/id/447/1200/800', cap: 'Terima kasih Bapak & Ibu Guru', kat: 'guru' },
+    { src: 'https://picsum.photos/id/416/1200/800', cap: 'Hari-hari di sekolah', kat: 'kegiatan' },
+    { src: 'https://picsum.photos/id/325/1200/800', cap: 'Kegiatan bersama di kelas', kat: 'kegiatan' },
+    { src: 'https://picsum.photos/id/611/1200/800', cap: 'Sebelum kita berpisah', kat: 'perpisahan' },
+    { src: 'https://picsum.photos/id/1083/1200/800', cap: 'Satu foto, seribu cerita', kat: 'perpisahan' },
+    { src: 'https://picsum.photos/id/496/1200/800', cap: 'Senyum yang akan dirindukan', kat: 'candid' },
+    { src: 'https://picsum.photos/id/452/1200/800', cap: 'Cerita yang tidak terlupakan', kat: 'candid' },
+    { src: 'https://picsum.photos/id/20/1200/800', cap: 'Kenangan di lingkungan SMAN 1 Muaragembong', kat: 'kegiatan' },
+    { src: 'https://picsum.photos/id/177/1200/800', cap: 'Tawa yang tak akan terulang', kat: 'candid' },
+    { src: 'https://picsum.photos/id/225/1200/800', cap: 'Suasana yang akan dirindukan', kat: 'kelas' },
+    { src: 'https://picsum.photos/id/342/1200/800', cap: 'Sampai jumpa lagi teman-teman', kat: 'perpisahan' },
+    { src: 'https://picsum.photos/id/16/1200/800', cap: 'Ilmu yang kau berikan abadi selamanya', kat: 'guru' }
+];
+
+let indeksSaatIni = 0;
+let filterAktif = 'semua';
+
+// === BUKA TUTUP LIGHTBOX ===
+function bukaGaleri(indeks) {
+    indeksSaatIni = indeks;
+    perbaruiLightbox();
+    document.getElementById('lightboxGaleri').classList.add('tampil');
+    document.body.style.overflow = 'hidden';
+}
+function tutupLightboxGaleri() {
+    document.getElementById('lightboxGaleri').classList.remove('tampil');
+    document.body.style.overflow = '';
+}
+function perbaruiLightbox() {
+    document.getElementById('gambarGaleri').src = dataGaleri[indeksSaatIni].src;
+    document.getElementById('captionGaleri').textContent = dataGaleri[indeksSaatIni].cap;
+}
+function fotoSebelumnya() {
+    indeksSaatIni = (indeksSaatIni - 1 + dataGaleri.length) % dataGaleri.length;
+    perbaruiLightbox();
+}
+function fotoBerikutnya() {
+    indeksSaatIni = (indeksSaatIni + 1) % dataGaleri.length;
+    perbaruiLightbox();
+}
+
+// === FILTER KATEGORI ===
+document.querySelectorAll('.btn-filter').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('aktif'));
+        btn.classList.add('aktif');
+        filterAktif = btn.dataset.filter;
+        
+        document.querySelectorAll('.item-foto').forEach((item, i) => {
+            const kat = item.dataset.kategori;
+            if(filterAktif === 'semua' || kat === filterAktif) {
+                item.classList.remove('sembunyi');
+            } else {
+                item.classList.add('sembunyi');
+            }
+        });
+    });
+});
+
+// === ANIMASI MUNCUL SAAT SCROLL ===
+const pengamat = new IntersectionObserver((elems) => {
+    elems.forEach(el => {
+        if(el.isIntersecting) el.target.classList.add('aktif');
+    });
+}, { threshold: 0.1 });
+document.querySelectorAll('.muncul').forEach(bagian => pengamat.observe(bagian));
+
+// === TOMBOL KEYBOARD UNTUK LIGHTBOX ===
+document.addEventListener('keydown', (e) => {
+    if(document.getElementById('lightboxGaleri').classList.contains('tampil')) {
+        if(e.key === 'ArrowLeft') fotoSebelumnya();
+        if(e.key === 'ArrowRight') fotoBerikutnya();
+        if(e.key === 'Escape') tutupLightboxGaleri();
+    }
+});
+</script>
+
+</body>
+</html>
